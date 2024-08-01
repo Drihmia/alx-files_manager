@@ -12,6 +12,7 @@ class RedisClient {
 
     // Connection status
     this._isConnected = false;
+    // This approach is not working due to the async nature of the connection
 
     this.client.on('connect', () => {
       // console.log('Connected to Redis');
@@ -27,7 +28,6 @@ class RedisClient {
   async __isConnected() {
     try {
       const res = await this.pingAsync();
-      console.log(`Ping response from Redis: ${res}`);
       return res === 'PONG';
     } catch (err) {
       console.log(`Error while pinging Redis: ${err}`);
@@ -35,8 +35,36 @@ class RedisClient {
     }
   }
 
+  _connectAsync() {
+    return new Promise((resolve, reject) => {
+      this.client.on('connect', resolve());
+      this.client.on('error', reject());
+    });
+  }
+
+  async iisAlive() {
+    try {
+      await this.__isConnected();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   isAlive() {
-    return this.client.connected;
+    try {
+      this.client.on('failed', () => {
+        console.log('Connection to Redis failed');
+        throw new Error('Connection to Redis failed');
+      });
+      this.client.on('error', (err) => {
+        console.log('Error from Redis client:', err);
+        throw new Error(err);
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   async get(key) {
