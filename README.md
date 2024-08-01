@@ -1,6 +1,6 @@
 # 📁✨ Files Manager - Project 0x04
 
-Welcome to the **Files Manager** project, a comprehensive and advanced task that ties together all you've learned in this back-end trimester: authentication, NodeJS, MongoDB, Redis, pagination, and background processing. Let's build an amazing file upload and view platform!
+Welcome to the **Files Manager** project, a comprehensive and advanced task that ties together all we've learned in this back-end trimester: authentication, NodeJS, MongoDB, Redis, pagination, and background processing. Let's build an amazing file upload and view platform!
 
 ### 🎯 Project Objectives
 - **User Authentication** via a token
@@ -20,7 +20,7 @@ Welcome to the **Files Manager** project, a comprehensive and advanced task that
 - **Checker Release**: August 2, 2024, 10:00 PM
 
 ### 🚀 Project Summary
-This project encapsulates everything you've learned in back-end development so far. You will build a functional platform with user authentication, file management, and image processing capabilities.
+This project encapsulates everything we've learned in back-end development so far. We will build a functional platform with user authentication, file management, and image processing capabilities.
 
 ### 📚 Resources
 - [Node JS getting started](https://nodejs.org/en/docs/guides/getting-started-guide/)
@@ -35,7 +35,7 @@ This project encapsulates everything you've learned in back-end development so f
 - [Redis](https://redis.io/documentation)
 
 ### 🧠 Learning Objectives
-By the end of this project, you will be able to:
+By the end of this project, we will:
 - Create an API with Express
 - Authenticate a user
 - Store data in MongoDB
@@ -43,11 +43,9 @@ By the end of this project, you will be able to:
 - Set up and use a background worker
 
 ### 🛠️ Requirements
-- **Editors**: vi, vim, emacs, Visual Studio Code
 - **Node.js Version**: 12.x.x
 - **Linting**: ESLint
 - **OS**: Ubuntu 18.04 LTS
-- **Mandatory**: A `README.md` file at the root of the project folder
 
 ### 📝 Provided Files
 - **package.json**
@@ -109,7 +107,7 @@ $ curl -X POST 0.0.0.0:5000/files -H "X-Token: your_token" -H "Content-Type: app
 
 ### 🔍 Testing
 
-**Run your tests using Mocha:**
+**Run tests using Mocha:**
 
 ```bash
 
