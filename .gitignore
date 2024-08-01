@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+
+# dotenv environment variable files
+.env
+
+# Redis
+dump.rdb
+
+# Miscellaneous
+package-lock.json
+.DS_Store
+*.swp
+*~
