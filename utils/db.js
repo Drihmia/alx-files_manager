@@ -30,7 +30,7 @@ class DBClient {
     for await (const doc of numUsers) {
       users.push(doc);
     }
-    return users;
+    return users.length;
   }
 
   async nbFiles() {
@@ -42,7 +42,7 @@ class DBClient {
     for await (const file of numFiles) {
       files.push(file);
     }
-    return files;
+    return files.length;
   }
 }
 
