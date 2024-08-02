@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 
 class DBClient {
   constructor() {
@@ -43,9 +43,18 @@ class DBClient {
     return files.length;
   }
 
-  async findUserByEmail(email) {
+  async findUserBy(res, projection) {
     const collection = await this.db.collection('users');
-    const user = await collection.findOne({ email });
+    const user = await collection.findOne({ ...res }, { projection });
+    if (user === null) return false;
+
+    return user;
+  }
+
+  async findUserById(id, projection) {
+    const collection = await this.db.collection('users');
+    const user = await collection.findOne({ _id: ObjectId(id) },
+      { projection });
     if (user === null) return false;
 
     return user;

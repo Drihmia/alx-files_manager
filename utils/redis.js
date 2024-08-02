@@ -84,6 +84,8 @@ class RedisClient {
     if (!res) {
       console.log(`Error while deleting ${key} in redis: ${res}`);
     }
+    // Return number of keys deleted
+    return res;
   }
 }
 

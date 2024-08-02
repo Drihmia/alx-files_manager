@@ -12,7 +12,12 @@ class UsersController {
       res.status(400).json({ error: 'Missing password' });
       return;
     }
-    const user = await dbClient.findUserByEmail(email);
+
+    // Check if email already exist, we don't need attributes
+    const user = await dbClient.findUserBy({ email },
+      // Exclude password, _id and email and return an empty createObject
+      { password: 0, _id: 0, email: 0 });
+    // Return an empty object in this case is enough to check if user exist
     if (user) {
       res.status(400).json({ error: 'Already exist' });
       return;
