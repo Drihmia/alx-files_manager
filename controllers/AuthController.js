@@ -13,7 +13,7 @@ class AuthController {
     const base64String = authorization.slice(6);
 
     // Decode the base64's string into the original string: "bob@dylan.com:toto1234!".
-    const userData = base64.decode(base64String);
+    const userData = base64.Buffer.from(base64String, 'base64').toString('utf-8');
 
     // Get the email and the password variables.
     const [email, password] = userData.split(':');

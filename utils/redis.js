@@ -52,24 +52,11 @@ class RedisClient {
   }
 
   isAlive() {
-    try {
-      this.client.on('failed', () => {
-        console.log('Connection to Redis failed');
-        throw new Error('Connection to Redis failed');
-      });
-      this.client.on('error', (err) => {
-        console.log('Error from Redis client:', err);
-        throw new Error(err);
-      });
-      return true;
-    } catch (_) {
-      return false;
-    }
+    return this._isConnected;
   }
 
   async get(key) {
     const value = await this.getAsync(key);
-    if (value == null) return false;
     return value;
   }
 
