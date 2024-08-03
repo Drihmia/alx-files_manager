@@ -51,6 +51,14 @@ class DBClient {
     return user;
   }
 
+  async findFileBy(res, projection) {
+    const collection = await this.db.collection('files');
+    const user = await collection.findOne({ ...res }, { projection });
+    if (user === null) return false;
+
+    return user;
+  }
+
   async findUserById(id, projection) {
     const collection = await this.db.collection('users');
     const user = await collection.findOne({ _id: ObjectId(id) },
@@ -60,9 +68,25 @@ class DBClient {
     return user;
   }
 
+  async findFileById(id, projection) {
+    const collection = await this.db.collection('files');
+    const user = await collection.findOne({ _id: ObjectId(id) },
+      { projection });
+    if (user === null) return false;
+
+    return user;
+  }
+
   async createObject(colName, data) {
     const collection = await this.db.collection(colName);
-    const res = await collection.insertOne(data);
+    let res;
+    if ('userId' in data) {
+      const dataCopy = { ...data };
+      dataCopy.userId = ObjectId(data.userId);
+      res = await collection.insertOne(dataCopy);
+    } else {
+      res = await collection.insertOne(data);
+    }
     // return the id of created documents/objects
     return res.ops[0]._id;
   }

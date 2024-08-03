@@ -72,7 +72,7 @@ class AuthController {
     const userId = await redisClient.get(redisKey);
 
     // If the token is invalid, send 401 "Unauthorized" error response.
-    if (userId === null) {
+    if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
