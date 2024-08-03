@@ -3,7 +3,7 @@ import dbClient from '../utils/db';
 
 class UsersController {
   static async postNew(req, res) {
-    const { email, password } = { ...req.body };
+    const { email, password } = req.body;
     if (email === undefined) {
       res.status(400).json({ error: 'Missing email' });
       return;
@@ -25,7 +25,7 @@ class UsersController {
 
     // Create User
     const id = await dbClient.createObject('users', { email, password: sha1(password) });
-    res.json({ id, email });
+    res.status(201).json({ id, email });
   }
 }
 
