@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+import { promises as fs } from 'fs';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -54,27 +56,48 @@ class FilesController {
       return;
     }
 
+    // Where to save all files
+    const rootPath = process.env.FOLDER_PATH || '/tmp/files_manager';
+
+    let fileParent;
     if (parentId) {
-      const fileParent = dbClient.findFileById(parentId);
+      fileParent = await dbClient.findFileById(parentId);
       if (!fileParent) {
         res.status(400).json({ error: 'Parent not found' });
         return;
       }
-
       if (fileParent.type !== 'folder') {
         res.status(400).json({ error: 'Parent is not a folder' });
         return;
       }
     }
 
-    const rootPath = process.env.FOLDER_PATH || '/tmp/files_manager';
+    try {
+      await fs.mkdir(rootPath, { recursive: true });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+
+    // The full path of the file
+    const localPath = `${rootPath}/${uuidv4()}`;
+
+    try {
+      await fs.writeFile(localPath, data, 'base64');
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
 
     const query = {
-      name, type, parentId, userId, isPublic, localPath: 'localPath',
+      name, type, parentId, userId, isPublic, localPath,
     };
 
-    const fileId = dbClient.createObject('files', query);
-    res.json({ userId });
+    const id = await dbClient.createObject('files', query);
+
+    res.status(201).json({
+      id, userId, name, type, isPublic, parentId,
+    });
   }
 }
 
