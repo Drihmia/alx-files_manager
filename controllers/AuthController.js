@@ -6,7 +6,7 @@ import redisClient from '../utils/redis';
 class AuthController {
   static async getConnect(req, res) {
     // Get the authorization header: "Basic Ym9iQGR5bGFuLmNvbTp0b3RvMTIzNCE=".
-    const { authorization } = { ...req.headers };
+    const { authorization } = req.headers;
 
     // Split only the base64's string: "Ym9iQGR5bGFuLmNvbTp0b3RvMTIzNCE=".
     const base64String = authorization.slice(6);
@@ -37,7 +37,7 @@ class AuthController {
     // Set Redis key with User ID for 24h.
     redisClient.set(redisKey, String(userDoc._id), 24 * 3600);
 
-    res.json({ token });
+    res.status(200).json({ token });
   }
 
   static async getDisconnect(req, res) {
@@ -85,7 +85,7 @@ class AuthController {
       return;
     }
 
-    res.json({ id: userId, email: userDoc.email });
+    res.status(200).json({ id: userId, email: userDoc.email });
   }
 }
 
