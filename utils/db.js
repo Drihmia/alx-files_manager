@@ -2,11 +2,22 @@ const { MongoClient } = require('mongodb');
 
 class DBClient {
   constructor() {
-  
-    this.host = process.env.DB_HOST || '127.0.0.1';
-    this.port = process.env.DB_PORT ||  27017;
-    this.dbName = process.env.DB_DATABASE || 'files_manager';
-  
+    if (process.env.DB_HOST) {
+      this.host = process.env.DB_HOST;
+    } else {
+      this.host = '127.0.0.1';
+    }
+    if (process.env.DB_PORT) {
+      this.port = process.env.DB_PORT;
+    } else {
+      this.port = 27017;
+    }
+
+    if (process.env.DB_DATABASE) {
+      this.dbName = process.env.DB_DATABASE;
+    } else {
+      this.dbName = 'files_manager';
+    }
 
     const url = `mongodb://${this.host}:${this.port}`;
 
