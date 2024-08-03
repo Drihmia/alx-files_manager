@@ -1,4 +1,3 @@
-import base64 from 'base-64';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -8,7 +7,6 @@ class FilesController {
     const redisKey = `auth_${token}`;
 
     const userId = await redisClient.get(redisKey);
-    console.log('usrID:', userId);
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
@@ -16,7 +14,6 @@ class FilesController {
     const {
       name, type, data, parentId = 0, isPublic = false,
     } = req.body;
-    console.log(name, type, data, parentId, isPublic);
 
     if (name === undefined) {
       res.status(400).json({ error: 'Missing name' });
@@ -71,14 +68,12 @@ class FilesController {
     }
 
     const rootPath = process.env.FOLDER_PATH || '/tmp/files_manager';
-    console.log('rootPath:', rootPath);
 
     const query = {
       name, type, parentId, userId, isPublic, localPath: 'localPath',
     };
 
     const fileId = dbClient.createObject('files', query);
-    console.log('fileId:', fileId);
     res.json({ userId });
   }
 }
