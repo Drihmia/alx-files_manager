@@ -14,8 +14,10 @@ class FilesController {
       return;
     }
     const {
-      name, type, data, parentId = '0', isPublic = false,
+      name, type, data, isPublic = false,
     } = req.body;
+    let { parentId = 0 } = req.body;
+    if (parentId === '0') parentId = Number(parentId);
 
     if (name === undefined) {
       res.status(400).json({ error: 'Missing name' });
@@ -60,7 +62,7 @@ class FilesController {
     const rootPath = process.env.FOLDER_PATH || '/tmp/files_manager';
 
     let fileParent;
-    if (parentId === '0') {
+    if (parentId) {
       fileParent = await dbClient.findFileById(parentId);
       if (!fileParent) {
         res.status(400).json({ error: 'Parent not found' });
