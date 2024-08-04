@@ -12,3 +12,7 @@ package-lock.json
 .DS_Store
 *.swp
 *~
+
+files_manager/
+image.png
+image_upload.py

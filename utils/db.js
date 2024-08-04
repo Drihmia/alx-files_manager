@@ -43,17 +43,27 @@ class DBClient {
     return files.length;
   }
 
-  async findUserBy(res, projection) {
+  async findUserBy(query, projection) {
     const collection = await this.db.collection('users');
-    const user = await collection.findOne({ ...res }, { projection });
+    const user = await collection.findOne(query, { projection });
     if (user === null) return false;
 
     return user;
   }
 
-  async findFileBy(res, projection) {
+  async findFilesBy(query, projection) {
+    const files = [];
     const collection = await this.db.collection('files');
-    const user = await collection.findOne({ ...res }, { projection });
+    const user = await collection.find(DBClient._convertIds(query), { projection });
+    for await (const file of user) {
+      files.push(file);
+    }
+    return files;
+  }
+
+  async findFileBy(query, projection) {
+    const collection = await this.db.collection('files');
+    const user = await collection.findOne(query, { projection });
     if (user === null) return false;
 
     return user;
@@ -77,18 +87,40 @@ class DBClient {
     return user;
   }
 
-  async createObject(colName, data) {
+  async createObject(colName, query) {
     const collection = await this.db.collection(colName);
     let res;
-    if ('userId' in data) {
-      const dataCopy = { ...data };
-      dataCopy.userId = ObjectId(data.userId);
+    if ('userId' in query) {
+      const dataCopy = { ...query };
+      dataCopy.userId = ObjectId(query.userId);
       res = await collection.insertOne(dataCopy);
     } else {
-      res = await collection.insertOne(data);
+      res = await collection.insertOne(query);
     }
     // return the id of created documents/objects
     return res.ops[0]._id;
+  }
+
+  async filesPagination(res, page, size, projection) {
+    const files = [];
+    const collection = await this.db.collection('files');
+    const docs = await collection.find(DBClient._convertIds(res), { projection });
+    const paginatedUser = await docs.skip(page !== 0 ? (page * size) : 0).limit(size);
+    for await (const file of paginatedUser) {
+      files.push(file);
+    }
+    return files;
+  }
+
+  static _convertIds(query) {
+    const dataCopy = { ...query };
+    if ('userId' in query) {
+      dataCopy.userId = ObjectId(String(query.userId));
+    }
+    if ('fileId' in query) {
+      dataCopy.fileId = ObjectId(query.fileId);
+    }
+    return dataCopy;
   }
 }
 
