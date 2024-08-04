@@ -14,7 +14,7 @@ class FilesController {
       return;
     }
     const {
-      name, type, data, parentId = 0, isPublic = false,
+      name, type, data, parentId = '0', isPublic = false,
     } = req.body;
 
     if (name === undefined) {
@@ -60,7 +60,7 @@ class FilesController {
     const rootPath = process.env.FOLDER_PATH || '/tmp/files_manager';
 
     let fileParent;
-    if (parentId) {
+    if (parentId === '0') {
       fileParent = await dbClient.findFileById(parentId);
       if (!fileParent) {
         res.status(400).json({ error: 'Parent not found' });
@@ -98,6 +98,62 @@ class FilesController {
     res.status(201).json({
       id, userId, name, type, isPublic, parentId,
     });
+  }
+
+  static async getShow(req, res) {
+    const token = req.headers['x-token'];
+    const redisKey = `auth_${token}`;
+
+    const userId = await redisClient.get(redisKey);
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    // const user = await dbClient.findUserById(userId);
+    // if (!userId) {
+    // res.status(401).json({ error: 'Unauthorized' });
+    // return;
+    // }
+
+    const { id } = req.params;
+
+    const file = await dbClient.findFileById(id);
+
+    if (userId !== String(file.userId)) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+
+    res.status(200).json(file);
+  }
+
+  static async getIndex(req, res) {
+    const token = req.headers['x-token'];
+    const redisKey = `auth_${token}`;
+
+    const userId = await redisClient.get(redisKey);
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const user = await dbClient.findUserById(userId);
+    if (!user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    let { parentId, page } = req.query;
+    if (parentId) parentId = Number(parentId);
+
+    let files;
+    if (!Number.isNaN(page)) {
+      if (page) page = Number(page);
+      files = await dbClient.filesPagination({ userId, parentId }, page, 20);
+    } else {
+      files = await dbClient.findFilesBy({ userId, parentId });
+    }
+    res.json(files);
   }
 }
 
