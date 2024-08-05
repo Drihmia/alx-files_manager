@@ -205,6 +205,43 @@ class FilesController {
 
     res.status(200).json({ ...file, isPublic });
   }
+
+  static async getFile(req, res) {
+    const { id } = req.params;
+    if (!id) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+
+    const file = await dbClient.findFileById(id);
+    if (!file) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+
+    if (file.isPublic === false) {
+      const token = req.headers['x-token'];
+      const redisKey = `auth_${token}`;
+
+      const userId = await redisClient.get(redisKey);
+      if (!userId) {
+        res.status(404).json({ error: 'Not found' });
+        return;
+      }
+    }
+
+    if (file.type === 'folder') {
+      res.status(400).json({ error: 'A folder doesn\'t have content' });
+      return;
+    }
+
+    try {
+      const data = await fs.readFile(file.localPath, 'utf8');
+      res.send(data);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
 }
 
 export default FilesController;
