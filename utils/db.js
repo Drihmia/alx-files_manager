@@ -89,24 +89,18 @@ class DBClient {
 
   async createObject(colName, query) {
     const collection = await this.db.collection(colName);
-    let res;
-    if ('userId' in query) {
-      const dataCopy = { ...query };
-      dataCopy.userId = ObjectId(query.userId);
-      res = await collection.insertOne(dataCopy);
-    } else {
-      res = await collection.insertOne(query);
-    }
+    const res = await collection.insertOne(this._convertIds(query));
     // return the id of created documents/objects
-    return res.ops[0]._id;
+    // return res.ops[0]._id;
+    return res.insertedId;
   }
 
   async filesPagination(res, page, size, projection) {
     const files = [];
     const collection = await this.db.collection('files');
     const docs = await collection.find(DBClient._convertIds(res), { projection });
-    const paginatedUser = await docs.skip(page !== 0 ? (page * size) : 0).limit(size);
-    for await (const file of paginatedUser) {
+    const paginatedUsers = await docs.skip(page !== 0 ? (page * size) : 0).limit(size);
+    for await (const file of paginatedUsers) {
       files.push(file);
     }
     return files;
@@ -119,6 +113,15 @@ class DBClient {
     }
     if ('fileId' in query) {
       dataCopy.fileId = ObjectId(query.fileId);
+    }
+    if ('parentId' in query) {
+      const { parentId } = query;
+      // checking if it's different from 0 (as number) is enough.
+      // from task's 5 output, if parentId is 0, it's a string.
+      // if it is a ID, it's an ObjectId.
+      if (parentId !== 0 || parentId !== '0') {
+        dataCopy.parentId = ObjectId(query.parentId);
+      }
     }
     return dataCopy;
   }

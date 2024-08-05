@@ -33,13 +33,16 @@ class FilesController {
     // ------------------------------------------------------------------------
     if (type === 'folder') {
       const query = {
-        userId, name, type, isPublic, parentId,
+        userId, name, type, isPublic,
       };
-      const folder = await dbClient.findFileBy({ name, type });
-      if (folder) {
-        res.status(400).json({ error: 'Folder already exists' });
-        return;
-      }
+      let { parentId = 0 } = req.body;
+      if (parentId === '0') parentId = Number(parentId);
+
+      await dbClient.findFileBy({ name, type });
+      // if (folder) {
+      // res.status(400).json({ error: 'Folder already exists' });
+      // return;
+      // }
 
       const id = await dbClient.createObject('files', query);
       res.status(201).json({
