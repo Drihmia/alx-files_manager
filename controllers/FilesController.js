@@ -36,7 +36,6 @@ class FilesController {
       const query = {
         userId, name, type, isPublic, parentId,
       };
-
       const folder = await dbClient.findFileBy({ name, type });
       if (folder) {
         res.status(400).json({ error: 'Folder already exists' });
@@ -71,6 +70,7 @@ class FilesController {
         res.status(400).json({ error: 'Parent not found' });
         return;
       }
+
       if (!fileParent) {
         res.status(400).json({ error: 'Parent not found' });
         return;
