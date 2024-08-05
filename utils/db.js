@@ -45,7 +45,13 @@ class DBClient {
 
   async findUserBy(query, projection) {
     const collection = await this.db.collection('users');
-    const user = await collection.findOne(query, { projection });
+    let user;
+    try {
+      user = await collection.findOne(query, { projection });
+    } catch (_) {
+      return false;
+    }
+
     if (user === null) return false;
 
     return user;
@@ -54,7 +60,13 @@ class DBClient {
   async findFilesBy(query, projection) {
     const files = [];
     const collection = await this.db.collection('files');
-    const user = await collection.find(DBClient._convertIds(query), { projection });
+    let user;
+    try {
+      user = await collection.find(DBClient._convertIds(query), { projection });
+    } catch (_) {
+      return files;
+    }
+
     for await (const file of user) {
       files.push(file);
     }
@@ -63,7 +75,13 @@ class DBClient {
 
   async findFileBy(query, projection) {
     const collection = await this.db.collection('files');
-    const user = await collection.findOne(query, { projection });
+    let user;
+    try {
+      user = await collection.findOne(query, { projection });
+    } catch (_) {
+      return false;
+    }
+
     if (user === null) return false;
 
     return user;
@@ -71,8 +89,14 @@ class DBClient {
 
   async findUserById(id, projection) {
     const collection = await this.db.collection('users');
-    const user = await collection.findOne({ _id: ObjectId(id) },
-      { projection });
+    let user;
+    try {
+      user = await collection.findOne({ _id: ObjectId(id) },
+        { projection });
+    } catch (_) {
+      return false;
+    }
+
     if (user === null) return false;
 
     return user;
@@ -97,7 +121,11 @@ class DBClient {
     let res;
     if ('userId' in query) {
       const dataCopy = { ...query };
-      dataCopy.userId = ObjectId(query.userId);
+      try {
+        dataCopy.userId = ObjectId(query.userId);
+      } catch (_) {
+        return false;
+      }
       res = await collection.insertOne(dataCopy);
     } else {
       res = await collection.insertOne(query);
@@ -109,17 +137,16 @@ class DBClient {
   async filesPagination(res, page, size, projection) {
     const files = [];
     const collection = await this.db.collection('files');
-    let docs;
     try {
-      docs = await collection.find(DBClient._convertIds(res), { projection });
+      const docs = await collection.find(DBClient._convertIds(res), { projection });
+      const paginatedUser = await docs.skip(page !== 0 ? (page * size) : 0).limit(size);
+      for await (const file of paginatedUser) {
+        files.push(file);
+      }
+      return files;
     } catch (error) {
       return false;
     }
-    const paginatedUser = await docs.skip(page !== 0 ? (page * size) : 0).limit(size);
-    for await (const file of paginatedUser) {
-      files.push(file);
-    }
-    return files;
   }
 
   static _convertIds(query) {
@@ -136,8 +163,12 @@ class DBClient {
   async updateFileById(id, newValues) {
     // newValues are an objects like { name: 'new name', type: 'new type' }
     const collection = await this.db.collection('files');
-    const res = await collection.updateOne({ _id: ObjectId(String(id)) }, { $set: newValues });
-    return res;
+    try {
+      const res = await collection.updateOne({ _id: ObjectId(String(id)) }, { $set: newValues });
+      return res;
+    } catch (error) {
+      return false;
+    }
   }
 }
 

@@ -83,8 +83,8 @@ class FilesController {
 
     try {
       await fs.mkdir(rootPath, { recursive: true });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
+    } catch (_) {
+      res.status(400).json({});
       return;
     }
 
@@ -93,8 +93,8 @@ class FilesController {
 
     try {
       await fs.writeFile(localPath, data, 'base64');
-    } catch (err) {
-      res.status(400).json({ error: err.message });
+    } catch (_) {
+      res.status(400).json({});
       return;
     }
 
@@ -108,6 +108,10 @@ class FilesController {
       return;
     }
     const id = await dbClient.createObject('files', query);
+    if (!id) {
+      res.status(400).json({});
+      return;
+    }
 
     res.status(201).json({
       id, userId, name, type, isPublic, parentId,
@@ -254,7 +258,7 @@ class FilesController {
     let file;
     try {
       file = await dbClient.findFileById(id);
-    } catch (err) {
+    } catch (_) {
       res.status(404).json({ error: 'Not found' });
       return;
     }
@@ -285,7 +289,7 @@ class FilesController {
       const mimeType = lookup(file.name);
       res.setHeader('Content-Type', mimeType);
       res.send(data);
-    } catch (err) {
+    } catch (_) {
       res.status(404).json({ error: 'Not found' });
     }
   }
