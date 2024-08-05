@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
+import { lookup } from 'mime-types';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -237,6 +238,10 @@ class FilesController {
 
     try {
       const data = await fs.readFile(file.localPath, 'utf8');
+      console.log(file.localPath);
+      const mimeType = lookup(file.name);
+      console.log('mimeType', mimeType);
+      res.setHeader('Content-Type', mimeType);
       res.send(data);
     } catch (err) {
       res.status(500).json(err);
