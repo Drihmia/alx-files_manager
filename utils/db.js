@@ -89,7 +89,7 @@ class DBClient {
 
   async createObject(colName, query) {
     const collection = await this.db.collection(colName);
-    const res = await collection.insertOne(DBClient._convertIds(query));
+    const res = await collection.insertOne(query);
     // return the id of created documents/objects
     // return res.ops[0]._id;
     return res.insertedId;
