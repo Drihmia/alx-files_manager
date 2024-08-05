@@ -14,5 +14,7 @@ route.get('/users/me', AuthController.getMe);
 route.post('/files', FilesController.postUpload);
 route.get('/files', FilesController.getIndex);
 route.get('/files/:id', FilesController.getShow);
+route.put('/files/:id/publish', FilesController.putPublish);
+route.put('/files/:id/unpublish', FilesController.putUnpublish);
 
 export default route;

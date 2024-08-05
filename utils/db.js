@@ -118,9 +118,16 @@ class DBClient {
       dataCopy.userId = ObjectId(String(query.userId));
     }
     if ('fileId' in query) {
-      dataCopy.fileId = ObjectId(query.fileId);
+      dataCopy.fileId = ObjectId(String(query.fileId));
     }
     return dataCopy;
+  }
+
+  async updateFileById(id, newValues) {
+    // newValues are an objects like { name: 'new name', type: 'new type' }
+    const collection = await this.db.collection('files');
+    const res = await collection.updateOne({ _id: ObjectId(String(id)) }, { $set: newValues });
+    return res;
   }
 }
 
