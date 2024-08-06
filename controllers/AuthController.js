@@ -7,6 +7,10 @@ class AuthController {
   static async getConnect(req, res) {
     // Get the authorization header: "Basic Ym9iQGR5bGFuLmNvbTp0b3RvMTIzNCE=".
     const { authorization } = req.headers;
+    if (!authorization) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
 
     // Split only the base64's string: "Ym9iQGR5bGFuLmNvbTp0b3RvMTIzNCE=".
     const base64String = authorization.slice(6);
@@ -18,9 +22,16 @@ class AuthController {
     const [email, password] = userData.split(':');
 
     // Get the User from database, if does not exist send 401 "Unauthorized" error response.
-    const userDoc = await dbClient.findUserBy({ email, password: sha1(password) },
-      // retrieve only the _id, using projection in MongoDB.
-      { password: 0, email: 0 });
+    let userDoc;
+    try {
+      userDoc = await dbClient.findUserBy({ email, password: sha1(password) },
+        // retrieve only the _id, using projection in MongoDB.
+        { password: 0, email: 0 });
+    } catch (_) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
     if (!userDoc) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
