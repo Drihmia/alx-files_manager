@@ -19,7 +19,7 @@ class FilesController {
       name, type, data, isPublic = false,
     } = req.body;
     let { parentId = 0 } = req.body;
-    if (parentId === '0') parentId = Number(parentId);
+    if (parentId === '0') parentId = 0;
 
     if (name === undefined) {
       res.status(400).json({ error: 'Missing name' });
@@ -44,6 +44,10 @@ class FilesController {
       }
 
       const id = await dbClient.createObject('files', query);
+      if (!id) {
+        res.status(400).json({});
+        return;
+      }
       res.status(201).json({
         id, userId, name, type, isPublic, parentId,
       });
@@ -135,12 +139,6 @@ class FilesController {
       return;
     }
 
-    // const user = await dbClient.findUserById(userId);
-    // if (!userId) {
-    // res.status(401).json({ error: 'Unauthorized' });
-    // return;
-    // }
-
     const { id } = req.params;
 
     let file;
@@ -182,15 +180,15 @@ class FilesController {
       return;
     }
 
-    let { parentId, page } = req.query;
-    if (parentId === '0') parentId = Number(parentId);
+    let { parentId = 0, page } = req.query;
+    if (parentId === '0' || parentId === '') parentId = 0;
 
     let files;
     if (!Number.isNaN(page)) {
       // Query in request send all args as string.
       if (page) page = Number(page);
       // Checking if the page is negative
-      if (page < 1) page = 0;
+      if (page < 0) page = 0;
 
       files = await dbClient.filesPagination({ userId, parentId }, page, 20);
     } else {
