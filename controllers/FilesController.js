@@ -302,9 +302,9 @@ class FilesController {
       const { size } = req.query;
       if (size && ['500', '250', '100'].includes(size)) {
         localPath = `${file.localPath}_${size}`;
-      } else {
-        localPath = file.localPath;
       }
+    } else {
+      localPath = file.localPath;
     }
 
     try {

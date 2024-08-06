@@ -119,19 +119,13 @@ class DBClient {
   async createObject(colName, query) {
     const collection = await this.db.collection(colName);
     let res;
-    if ('userId' in query) {
-      const dataCopy = { ...query };
-      try {
-        dataCopy.userId = ObjectId(query.userId);
-      } catch (_) {
-        return false;
-      }
-      res = await collection.insertOne(dataCopy);
-    } else {
-      res = await collection.insertOne(query);
+    try {
+      res = await collection.insertOne(DBClient._convertIds(query));
+      return res.ops[0]._id;
+    } catch (_) {
+      return false;
     }
     // return the id of created documents/objects
-    return res.ops[0]._id;
   }
 
   async filesPagination(res, page, size, projection) {
@@ -156,6 +150,9 @@ class DBClient {
     }
     if ('fileId' in query) {
       dataCopy.fileId = ObjectId(String(query.fileId));
+    }
+    if ('parentId' in query) {
+      dataCopy.parentId = ObjectId(String(query.parentId));
     }
     return dataCopy;
   }
