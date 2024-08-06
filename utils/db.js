@@ -152,7 +152,10 @@ class DBClient {
       dataCopy.fileId = ObjectId(String(query.fileId));
     }
     if ('parentId' in query) {
-      dataCopy.parentId = ObjectId(String(query.parentId));
+      const { parentId } = query;
+      if (parentId !== 0 && parentId !== '0') {
+        dataCopy.parentId = ObjectId(String(parentId));
+      }
     }
     return dataCopy;
   }
