@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import { lookup } from 'mime-types';
+import Queue from 'bull';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -92,7 +93,8 @@ class FilesController {
     const localPath = `${rootPath}/${uuidv4()}`;
 
     try {
-      await fs.writeFile(localPath, data, 'base64');
+      const buffer = Buffer.from(data, 'base64');
+      await fs.writeFile(localPath, buffer);
     } catch (_) {
       res.status(400).json({});
       return;
@@ -111,6 +113,11 @@ class FilesController {
     if (!id) {
       res.status(400).json({});
       return;
+    }
+
+    if (type === 'image') {
+      const fileQueue = new Queue('fileQueue');
+      fileQueue.add({ userId, fileId: id });
     }
 
     res.status(201).json({
@@ -277,15 +284,31 @@ class FilesController {
         res.status(404).json({ error: 'Not found' });
         return;
       }
+      // Check if the authenticagetFileted user is the owner of the file
+      if (userId !== String(file.userId)) {
+        res.status(404).json({ error: 'Not found' });
+        return;
+      }
     }
 
-    if (file.type === 'folder') {
+    const { type } = file;
+    if (type === 'folder') {
       res.status(400).json({ error: 'A folder doesn\'t have content' });
       return;
     }
 
+    let localPath;
+    if (type === 'image') {
+      const { size } = req.query;
+      if (size && ['500', '250', '100'].includes(size)) {
+        localPath = `${file.localPath}_${size}`;
+      } else {
+        localPath = file.localPath;
+      }
+    }
+
     try {
-      const data = await fs.readFile(file.localPath, 'utf8');
+      const data = await fs.readFile(localPath);
       const mimeType = lookup(file.name);
       res.setHeader('Content-Type', mimeType);
       res.send(data);
