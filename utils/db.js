@@ -12,6 +12,8 @@ class DBClient {
       if (!err) {
         this.isConnected = true;
         this.db = clientMGDB.db(dbName);
+        this.colUsers = this.db.collection('users');
+        this.colFiles = this.db.collection('files');
       }
     });
   }
@@ -21,20 +23,17 @@ class DBClient {
   }
 
   async nbUsers() {
-    const colUsers = await this.db.collection('users');
-    return colUsers.countDocuments();
+    return this.colUsers.countDocuments();
   }
 
   async nbFiles() {
-    const colFiles = await this.db.collection('files');
-    return colFiles.countDocuments();
+    return this.colFiles.countDocuments();
   }
 
   async findUserBy(query, projection) {
-    const collection = await this.db.collection('users');
     let user;
     try {
-      user = await collection.findOne(DBClient._convertIds(query), { projection });
+      user = await this.colUsers.findOne(DBClient._convertIds(query), { projection });
     } catch (_) {
       return false;
     }
@@ -45,10 +44,9 @@ class DBClient {
   }
 
   async findFilesBy(query, projection) {
-    const collection = await this.db.collection('files');
     let filesCursor;
     try {
-      filesCursor = collection.find(DBClient._convertIds(query), { projection });
+      filesCursor = this.colFiles.find(DBClient._convertIds(query), { projection });
     } catch (_) {
       return [];
     }
@@ -57,10 +55,9 @@ class DBClient {
   }
 
   async findFileBy(query, projection) {
-    const collection = await this.db.collection('files');
     let user;
     try {
-      user = await collection.findOne(DBClient._convertIds(query), { projection });
+      user = await this.colFiles.findOne(DBClient._convertIds(query), { projection });
     } catch (_) {
       return false;
     }
@@ -71,10 +68,9 @@ class DBClient {
   }
 
   async findUserById(id, projection) {
-    const collection = await this.db.collection('users');
     let user;
     try {
-      user = await collection.findOne({ _id: ObjectId(id) },
+      user = await this.colUsers.findOne({ _id: ObjectId(id) },
         { projection });
     } catch (_) {
       return false;
@@ -86,10 +82,9 @@ class DBClient {
   }
 
   async findFileById(id, projection) {
-    const collection = await this.db.collection('files');
     let user;
     try {
-      user = await collection.findOne({ _id: ObjectId(id) },
+      user = await this.colFiles.findOne({ _id: ObjectId(id) },
         { projection });
     } catch (_) {
       return false;
@@ -108,20 +103,14 @@ class DBClient {
     } catch (_) {
       return false;
     }
-    // return the id of created documents/objects
   }
 
   async filesPagination(res, page, size, projection) {
-    const files = [];
-    const collection = await this.db.collection('files');
     try {
-      const docs = await collection.find(DBClient._convertIds(res), { projection });
-      const paginatedUser = await docs.skip(page !== 0 ? (page * size) : 0).limit(size);
-      for await (const file of paginatedUser) {
-        files.push(file);
-      }
-      return files;
-    } catch (error) {
+      const docs = await this.colFiles.find(DBClient._convertIds(res), { projection });
+      const paginatedUser = await docs.skip(page * size).limit(size);
+      return paginatedUser.toArray();
+    } catch (_) {
       return false;
     }
   }
@@ -145,11 +134,10 @@ class DBClient {
 
   async updateFileById(id, newValues) {
     // newValues are an objects like { name: 'new name', type: 'new type' }
-    const collection = await this.db.collection('files');
     try {
-      const res = await collection.updateOne({ _id: ObjectId(String(id)) }, { $set: newValues });
+      const res = await this.colFiles.updateOne({ _id: ObjectId(String(id)) }, { $set: newValues });
       return res;
-    } catch (error) {
+    } catch (_) {
       return false;
     }
   }
