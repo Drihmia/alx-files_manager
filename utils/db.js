@@ -5,13 +5,13 @@ class DBClient {
     const dbHost = process.env.DB_HOST || 'localhost';
     const dbPort = process.env.DB_PORT || '27017';
     const dbName = process.env.DB_DATABASE || 'files_manager';
-    this.clientMGDB = MongoClient(`mongodb://${dbHost}:${dbPort}`);
+    const clientMGDB = new MongoClient(`mongodb://${dbHost}:${dbPort}`);
     this.isConnected = false;
 
-    this.clientMGDB.connect((err) => {
+    clientMGDB.connect((err) => {
       if (!err) {
         this.isConnected = true;
-        this.db = this.clientMGDB.db(dbName);
+        this.db = clientMGDB.db(dbName);
       }
     });
   }
@@ -21,33 +21,20 @@ class DBClient {
   }
 
   async nbUsers() {
-    const users = [];
-
     const colUsers = await this.db.collection('users');
-    const numUsers = await colUsers.find({});
-
-    for await (const doc of numUsers) {
-      users.push(doc);
-    }
-    return users.length;
+    return colUsers.countDocuments();
   }
 
   async nbFiles() {
-    const files = [];
-
     const colFiles = await this.db.collection('files');
-    const numFiles = await colFiles.find({});
-    for await (const file of numFiles) {
-      files.push(file);
-    }
-    return files.length;
+    return colFiles.countDocuments();
   }
 
   async findUserBy(query, projection) {
     const collection = await this.db.collection('users');
     let user;
     try {
-      user = await collection.findOne(query, { projection });
+      user = await collection.findOne(DBClient._convertIds(query), { projection });
     } catch (_) {
       return false;
     }
@@ -58,26 +45,22 @@ class DBClient {
   }
 
   async findFilesBy(query, projection) {
-    const files = [];
     const collection = await this.db.collection('files');
-    let user;
+    let filesCursor;
     try {
-      user = await collection.find(DBClient._convertIds(query), { projection });
+      filesCursor = collection.find(DBClient._convertIds(query), { projection });
     } catch (_) {
-      return files;
+      return [];
     }
 
-    for await (const file of user) {
-      files.push(file);
-    }
-    return files;
+    return filesCursor.toArray();
   }
 
   async findFileBy(query, projection) {
     const collection = await this.db.collection('files');
     let user;
     try {
-      user = await collection.findOne(query, { projection });
+      user = await collection.findOne(DBClient._convertIds(query), { projection });
     } catch (_) {
       return false;
     }
@@ -121,7 +104,7 @@ class DBClient {
     let res;
     try {
       res = await collection.insertOne(DBClient._convertIds(query));
-      return res.ops[0]._id;
+      return res.insertedId;
     } catch (_) {
       return false;
     }
