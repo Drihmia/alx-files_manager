@@ -11,7 +11,6 @@ Welcome to the **Files Manager** project, a comprehensive and advanced task that
 - **Thumbnail Generation**: Generate thumbnails for images
 
 ### 👥 Team
-- **Ghazi Omar**
 - **Redouane Drihmia**
 
 ### 📅 Project Timeline
