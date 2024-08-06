@@ -1,4 +1,5 @@
 import sha1 from 'sha1';
+import Queue from 'bull';
 import dbClient from '../utils/db';
 
 class UsersController {
@@ -25,6 +26,8 @@ class UsersController {
 
     // Create User
     const id = await dbClient.createObject('users', { email, password: sha1(password) });
+    const userQueue = new Queue('userQueue');
+    await userQueue.add({ userId: id });
     res.status(201).json({ id, email });
   }
 }

@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import dbClient from './utils/db';
 
 const fileQueue = new Queue('fileQueue');
+const userQueue = new Queue('userQueue');
 
 fileQueue.process(async (job, done) => {
   const { userId, fileId } = job.data;
@@ -33,6 +34,21 @@ fileQueue.process(async (job, done) => {
     }));
     done();
   } catch (_) {
-    done(new Error('-----'));
+    return done(new Error('-----'));
   }
+});
+
+userQueue.process(async (job, done) => {
+  const { userId } = job.data;
+  if (!userId) return done(new Error('Missing userId'));
+
+  let user;
+  try {
+    user = await dbClient.findUserById(userId);
+  } catch (_) {
+    return done(new Error('File not found'));
+  }
+  if (!user) return done(new Error('User not found'));
+
+  console.log(`Welcome ${user.email}`);
 });
