@@ -5,7 +5,7 @@ class DBClient {
     const dbHost = process.env.DB_HOST || 'localhost';
     const dbPort = process.env.DB_PORT || '27017';
     const dbName = process.env.DB_DATABASE || 'files_manager';
-    const clientMGDB = new MongoClient(`mongodb://${dbHost}:${dbPort}`);
+    const clientMGDB = new MongoClient(`mongodb://${dbHost}:${dbPort}`, { useUnifiedTopology: true });
     this.isConnected = false;
 
     clientMGDB.connect((err) => {
@@ -95,10 +95,10 @@ class DBClient {
   }
 
   async createObject(colName, query) {
-    const collection = await this.db.collection(colName);
+    const collection = { users: this.colUsers, files: this.colFiles };
     let res;
     try {
-      res = await collection.insertOne(DBClient._convertIds(query));
+      res = await collection[colName].insertOne(DBClient._convertIds(query));
       return res.insertedId;
     } catch (_) {
       return false;
@@ -136,6 +136,24 @@ class DBClient {
     // newValues are an objects like { name: 'new name', type: 'new type' }
     try {
       const res = await this.colFiles.updateOne({ _id: ObjectId(String(id)) }, { $set: newValues });
+      return res;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async deleteUserById(id) {
+    try {
+      const res = await this.colUsers.deleteOne({ _id: ObjectId(String(id)) });
+      return res;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async deleteFileById(id) {
+    try {
+      const res = await this.colFiles.deleteOne({ _id: ObjectId(String(id)) });
       return res;
     } catch (_) {
       return false;
