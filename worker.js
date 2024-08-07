@@ -51,4 +51,5 @@ userQueue.process(async (job, done) => {
   if (!user) return done(new Error('User not found'));
 
   console.log(`Welcome ${user.email}`);
+  done();
 });
