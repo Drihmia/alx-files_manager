@@ -190,7 +190,7 @@ class FilesController {
       // Checking if the page is negative
       if (page < 0) page = 0;
 
-      files = await dbClient.filesPagination({ userId, parentId }, page, 20);
+      files = await dbClient.filesPaginationPipeline({ userId, parentId }, page, 20);
     } else {
       files = await dbClient.findFilesBy({ userId, parentId });
     }

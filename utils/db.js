@@ -115,6 +115,22 @@ class DBClient {
     }
   }
 
+  async filesPaginationPipeline(res, page, size, projection) {
+    try {
+      const pipeline = [
+        { $match: DBClient._convertIds(res) },
+        { $project: projection },
+        { $skip: page * size },
+        { $limit: size },
+      ];
+
+      const docs = await this.colFiles.aggregate(pipeline).toArray();
+      return docs;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static _convertIds(query) {
     const dataCopy = { ...query };
     if ('userId' in query) {
