@@ -126,7 +126,6 @@ class DBClient {
       const docs = await this.colFiles.aggregate(pipeline).toArray();
       return docs;
     } catch (_) {
-      console.log(_);
       return false;
     }
   }

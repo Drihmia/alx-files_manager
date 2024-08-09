@@ -30,6 +30,24 @@ class FilesController {
       return;
     }
 
+    let fileParent;
+    if (parentId) {
+      try {
+        fileParent = await dbClient.findFileById(parentId);
+      } catch (_) {
+        res.status(400).json({ error: 'Parent not found' });
+        return;
+      }
+
+      if (!fileParent) {
+        res.status(400).json({ error: 'Parent not found' });
+        return;
+      }
+      if (fileParent.type !== 'folder') {
+        res.status(400).json({ error: 'Parent is not a folder' });
+        return;
+      }
+    }
     // ------------------------------------------------------------------------
     // ----------------------------- Folders section --------------------------
     // ------------------------------------------------------------------------
@@ -66,25 +84,6 @@ class FilesController {
 
     // Where to save all files
     const rootPath = process.env.FOLDER_PATH || '/tmp/files_manager';
-
-    let fileParent;
-    if (parentId) {
-      try {
-        fileParent = await dbClient.findFileById(parentId);
-      } catch (_) {
-        res.status(400).json({ error: 'Parent not found' });
-        return;
-      }
-
-      if (!fileParent) {
-        res.status(400).json({ error: 'Parent not found' });
-        return;
-      }
-      if (fileParent.type !== 'folder') {
-        res.status(400).json({ error: 'Parent is not a folder' });
-        return;
-      }
-    }
 
     try {
       await fs.mkdir(rootPath, { recursive: true });
