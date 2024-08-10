@@ -179,20 +179,17 @@ class FilesController {
       return;
     }
 
-    let { parentId = 0, page } = req.query;
-    if (parentId === '0' || parentId === '') parentId = 0;
+    let { page = 0 } = req.query;
+    const { parentId = '0' } = req.query;
 
     let files;
-    if (!Number.isNaN(page)) {
-      // Query in request send all args as string.
-      if (page) page = Number(page);
-      // Checking if the page is negative
-      if (page < 0) page = 0;
+    // Query in request send all args as string.
+    page = Number(page);
+    // Checking if the page is negative
+    if (page < 0) page = 0;
 
-      files = await dbClient.filesPaginationPipeline({ userId, parentId }, page, 20);
-    } else {
-      files = await dbClient.findFilesBy({ userId, parentId });
-    }
+    files = await dbClient.filesPaginationPipeline({ userId, parentId }, page, 20);
+    files = files.map(({ _id: id, ...rest }) => ({ id, ...rest }));
     res.json(files);
   }
 
