@@ -1,9 +1,9 @@
 import request from 'request';
 import { expect } from 'chai';
 import { v4 as uuidv4 } from 'uuid';
-import dbClient from '../../utils/db';
+import dbClient from '../utils/db';
 
-describe('get Connect', function() {
+describe('get Connect', () => {
   after(async () => {
     const ret = await dbClient.deleteUserById(userId);
     if (!ret) {
@@ -14,13 +14,13 @@ describe('get Connect', function() {
   const email = `${uuidv4()}@gmail.com`;
   const password = 'password';
   let userId;
-  it('returning status 201', function(done) {
+  it('returning status 201', () => new Promise((done) => {
     request.post({
-      url:'http://localhost:5000/users',
+      url: 'http://localhost:5000/users',
       json: true,
-      body : { email, password },
+      body: { email, password },
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
     }, (err, res, body) => {
       userId = body.id;
@@ -29,10 +29,9 @@ describe('get Connect', function() {
       expect(res.request.port).to.equal('5000');
       done();
     });
-  });
+  }));
 
-  it('Create new user does not exist in database', async () => {
-
+  it('create new user does not exist in database', async () => {
     const user = await dbClient.findUserBy({ email });
 
     expect(String(user._id)).to.equal(userId);
@@ -40,13 +39,13 @@ describe('get Connect', function() {
     expect(user.password).to.not.equal(password);
   });
 
-  it('create User exist in database', (done) => {
+  it('create User exist in database', () => new Promise((done) => {
     request.post({
-      url:'http://localhost:5000/users',
+      url: 'http://localhost:5000/users',
       json: true,
-      body : { email, password },
+      body: { email, password },
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
     }, (err, res, body) => {
       expect(res.statusCode).to.equal(400);
@@ -55,15 +54,15 @@ describe('get Connect', function() {
       expect(body.error).to.equal('Already exist');
       done();
     });
-  });
+  }));
 
-  it('Missing password', (done) => {
+  it('missing password', () => new Promise((done) => {
     request.post({
-      url:'http://localhost:5000/users',
+      url: 'http://localhost:5000/users',
       json: true,
-      body : { email },
+      body: { email },
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
     }, (err, res, body) => {
       expect(res.statusCode).to.equal(400);
@@ -72,15 +71,15 @@ describe('get Connect', function() {
       expect(body.error).to.equal('Missing password');
       done();
     });
-  });
+  }));
 
-  it('Missing email', (done) => {
+  it('missing email', () => new Promise((done) => {
     request.post({
-      url:'http://localhost:5000/users',
+      url: 'http://localhost:5000/users',
       json: true,
-      body : { password },
+      body: { password },
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
     }, (err, res, body) => {
       expect(res.statusCode).to.equal(400);
@@ -89,5 +88,5 @@ describe('get Connect', function() {
       expect(body.error).to.equal('Missing email');
       done();
     });
-  });
+  }));
 });

@@ -1,8 +1,12 @@
 import { expect } from 'chai';
-import dbClient from '../../utils/db';
+import dbClient from '../utils/db';
 
 describe('test MongoDB\'s database', () => {
-  it('test isAlive', () => {
+  it('test isAlive', async () => {
+    // Wait for database's connection to estabish.
+    while (!dbClient.isAlive()) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
     expect(dbClient.isAlive()).to.be.true;
   });
 
